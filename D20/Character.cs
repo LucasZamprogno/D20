@@ -3,14 +3,6 @@ using System.Collections.Generic;
 
 namespace D20
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello World!");
-        }
-    }
-
     public abstract class Character
     {
 
