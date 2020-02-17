@@ -158,7 +158,6 @@ namespace D20Tests
         [TestMethod]
         public void FrameBlockTest()
         {
-            Orc.HardReset();
             Orc character = Orc.GetInstance();
             int start = character.HP.GetCurrent();
             GameStack gs = GameStack.GetInstance();
