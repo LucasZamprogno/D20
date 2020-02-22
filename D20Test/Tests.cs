@@ -136,10 +136,13 @@ namespace D20Tests
             int start = character.HP.GetCurrent();
             GameStack gs = GameStack.GetInstance();
             EventHub eh = EventHub.GetInstance();
-            
-            Action<Event> todo = (Event x) => character.HP.Restore(1);
-            Listener l = new Listener(todo);
-            eh.RegisterListener(Timing.After, EventType.Test, l);
+
+            Listener.EventHandler todo = (GameStackFrame sender, CustomArgs args) =>
+            {
+                character.HP.Restore(1);
+            };
+            Listener l = eh.GetListener(Timing.After, EventType.Test);
+            l.OnTrigger += todo;
             
             Action a = () => character.HP.AttemptReduce(2);
             GameStackFrame frame = new GameStackFrame(EventType.Test, "testEvent", 0, a);
@@ -162,10 +165,13 @@ namespace D20Tests
             int start = character.HP.GetCurrent();
             GameStack gs = GameStack.GetInstance();
             EventHub eh = EventHub.GetInstance();
-
-            Action<Event> todo = (Event x) => gs.BlockFrame(0); // BIG YIKES hardcoded
-            Listener l = new Listener(todo);
-            eh.RegisterListener(Timing.Before, EventType.Test, l);
+            
+            Listener.EventHandler todo = (GameStackFrame sender, CustomArgs args) =>
+            {
+                gs.BlockFrame(0); // BIG YIKES hardcoded
+            };
+            Listener l = eh.GetListener(Timing.Before, EventType.Test);
+            l.OnTrigger += todo;
 
             Action a = () => character.HP.AttemptReduce(2);
             GameStackFrame frame = new GameStackFrame(EventType.Test, "testEvent", 0, a);

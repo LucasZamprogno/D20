@@ -95,10 +95,10 @@ namespace D20
 
     public class GameStackFrame
     {
-        private uint id;
-        private string name;
-        private int value;
-        private EventType type;
+        public uint id { get; set; }
+        public string name { get; }
+        public int value { get; }
+        public EventType type { get; }
         private Action body;
         public bool preprocessed;
 
@@ -125,65 +125,58 @@ namespace D20
         public void preprocess()
         {
             this.preprocessed = true;
-            Event e = new Event(Timing.Before, this.type, this.id, this.name, this.value);
-            EventHub.GetInstance().BroadcastEvent(e);
+            CustomArgs args = new CustomArgs(Timing.Before);
+            EventHub.GetInstance().BroadcastEvent(this, args);
         }
 
         public void run()
         {
             this.body();
-            Event e = new Event(Timing.After, this.type, this.id, this.name, this.value);
-            EventHub.GetInstance().BroadcastEvent(e);
+            CustomArgs args = new CustomArgs(Timing.After);
+            EventHub.GetInstance().BroadcastEvent(this, args);
         }
     }
 
     public class Listener
     {
-        private Action<Event> action;
+        public delegate void EventHandler(GameStackFrame sender, CustomArgs args);
+        public event EventHandler OnTrigger;
 
-        public Listener(Action<Event> action)
+        public Listener()
         {
-            this.action = action;
+            
         }
 
-        public void Notify(Event eve)
+        public void Notify(GameStackFrame sender, CustomArgs args)
         {
-            Console.WriteLine($"Listener heard event {eve.name}");
-            this.action(eve);
+            Console.WriteLine($"Listener heard event {sender.name}");
+            this.OnTrigger?.Invoke(sender, args);
         }
     }
 
-    public class Event
+    public class CustomArgs : EventArgs
     {
-        public readonly EventType type;
         public readonly Timing time;
-        public readonly uint frame;
-        public readonly string name;
-        public readonly int value;
-        public Event(Timing time, EventType type, uint frame, string name, int value)
+        public CustomArgs(Timing time)
         {
-            this.type = type;
             this.time = time;
-            this.frame = frame;
-            this.name = name;
-            this.value = value;
         }
     }
 
     public class EventHub
     {
         private static EventHub instance = null;
-        private Dictionary<Timing, Dictionary<EventType, List<Listener>>> map;
+        private Dictionary<Timing, Dictionary<EventType, Listener>> map;
 
         private EventHub()
         {
-            this.map = new Dictionary<Timing, Dictionary<EventType, List<Listener>>>();
+            this.map = new Dictionary<Timing, Dictionary<EventType, Listener>>();
             foreach (Timing time in Enum.GetValues(typeof(Timing)))
             {
-                this.map[time] = new Dictionary<EventType, List<Listener>>();
+                this.map[time] = new Dictionary<EventType, Listener>();
                 foreach (EventType type in Enum.GetValues(typeof(EventType)))
                 {
-                    this.map[time][type] = new List<Listener>();
+                    this.map[time][type] = new Listener();
                 }
             }
         }
@@ -201,17 +194,14 @@ namespace D20
             EventHub.instance = new EventHub();
         }
 
-        public void RegisterListener(Timing time, EventType type, Listener listener)
+        public Listener GetListener(Timing time, EventType type)
         {
-            this.map[time][type].Add(listener);
+            return this.map[time][type];
         }
 
-        public void BroadcastEvent(Event eve)
+        public void BroadcastEvent(GameStackFrame sender, CustomArgs args)
         {
-            foreach (Listener listener in this.map[eve.time][eve.type])
-            {
-                listener.Notify(eve);
-            }
+            this.map[args.time][sender.type].Notify(sender, args);
         }
     }
 }
