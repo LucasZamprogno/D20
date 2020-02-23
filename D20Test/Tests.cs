@@ -187,4 +187,28 @@ namespace D20Tests
             Assert.AreEqual(start, end);
         }
     }
+
+    [TestClass]
+    public class SkillTests
+    {
+        [TestInitialize]
+        public void Reset()
+        {
+            Orc.HardReset();
+            GameStack.HardReset();
+            EventHub.HardReset();
+        }
+        [TestMethod]
+        public void BasicSkillTest()
+        {
+            GameStack gs = GameStack.GetInstance();
+            BasicAttack attack = new BasicAttack();
+            attack.Use();
+            while (gs.HasMoreFrames())
+            {
+                gs.Pop();
+            }
+        }
+        
+    }
 }

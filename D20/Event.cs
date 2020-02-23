@@ -52,8 +52,8 @@ namespace D20
 
         public void Push(GameStackFrame frame)
         {
-            Console.WriteLine($"GameStackFrame: Pushing frame{frame.getId()} to stack");
             frame.assignId(this.stackFrameCounter);
+            Console.WriteLine($"GameStackFrame: Pushing frame{frame.getId()} to stack");
             this.stackFrameCounter++;
             this.stack.Push(frame);
         }

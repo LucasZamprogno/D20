@@ -153,14 +153,4 @@ namespace D20
             return this.current;
         }
     }
-
-    public class Item
-    {
-
-    }
-
-    public class Skill
-    {
-
-    }
 }
